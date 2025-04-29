@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+  
+
+<script>
+// radio 값에 따라 "YYYY-MM-DD hh:mm:ss" 형식 문자열에서 시간단위 만들기
+const timeStr = '2025-04-29 15:30:00';
+const baseUnit = 'hour'
+
+function displayTime(timeStr, baseUnit) {
+  //const baseUnit = $('input[name=""]:checked').val(); 
+
+  const [date, time] = timeStr.split(' ');
+  const [year, month, day] = date.split('-');
+  const [hour, minute] = time.split(':');
+
+  if(!date || !time) return '';
+  
+  switch(baseUnit) {
+    case 'hour': 
+      if(hour + ':' + minute !== '00:00') {
+        return hour + ':' + minute;
+      } else {
+        return month + '/' + day;
+      }
+    case 'day' : return month + '/' + day;
+    //case 'week' : 
+  }
+}
+
+// 날짜 정보 문자열 기준 시간 계산후 날짜 정보 문자열 만들기
+// -23넣어야 기준.
+function calBaseDate(timeStr, calHour) {
+  const isoStr = timeStr.replace(' ', 'T');
+  const dateObj = new Date(isoStr);
+
+  if(isNaN(dateObj)) {return '';}
+
+  dateObj.setHours(dateObj.getHours() + calHour);
+
+  const yyyy = dateObj.getFullYear();
+  const MM = String(dateObj.getMonth()+1).padStart(2, '0');
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const HH = String(dateObj.getHours()).padStart(2, '0');
+  
+  return `${yyyy}-${MM}-${dd} ${HH}:00:00`;
+}
+
+// date별로 묶고 schedular + type을 키로 하는 ratio값 배열 만들기
+const demo = [
+  { Date: '2025-04-29 10:00:00', SCHEDULAR: 'Red', Type: 'Circle', Ratio: 54 },
+  { Date: '2025-04-29 10:00:00', SCHEDULAR: 'Blue', Type: 'Square', Ratio: 30 },
+  { Date: '2025-04-29 10:00:00', SCHEDULAR: 'Green', Type: 'Triangle', Ratio: 10 },
+  { Date: '2025-04-29 10:00:00', SCHEDULAR: 'Yellow', Type: 'Hexagon', Ratio: 6 }
+];
+
+function makeLineData(items) {
+  const grouped = {};
+  
+  items.forEach(item => {
+    const key = item.Date;
+    const prop = item.SCHEDULAR + ' ' + item.Type;
+  
+    if (!grouped[key]) {
+      grouped[key] = { Date: key };
+    }
+  
+    grouped[key][prop] = item.Ratio;
+  });
+  
+  console.log(Object.values(grouped));
+  return Object.values(grouped);
+}
+
+/*
+//in JAVA
+import java.util.*;
+
+public class GroupByDateTransformer {
+
+    public static List<Map<String, Object>> transform(List<Map<String, Object>> items) {
+        Map<String, Map<String, Object>> grouped = new LinkedHashMap<>();
+
+        for (Map<String, Object> item : items) {
+            String date = (String) item.get("Date");
+            String scheduler = (String) item.get("SCHEDULAR");
+            String type = (String) item.get("Type");
+            Object ratio = item.get("Ratio");
+
+            String key = scheduler + type;
+
+            // Get or create group by date
+            grouped.putIfAbsent(date, new LinkedHashMap<>());
+            Map<String, Object> group = grouped.get(date);
+
+            group.put("Date", date);
+            group.put(key, ratio);
+        }
+
+        return new ArrayList<>(grouped.values());
+    }
+
+    public static void main(String[] args) {
+        List<Map<String, Object>> items = new ArrayList<>();
+
+        // Sample data
+        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Red", "Type", "Circle", "Ratio", 54));
+        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Blue", "Type", "Square", "Ratio", 30));
+        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Green", "Type", "Triangle", "Ratio", 10));
+        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Yellow", "Type", "Hexagon", "Ratio", 6));
+        
+        // Add more groups if needed...
+
+        List<Map<String, Object>> result = transform(items);
+
+        // Print result
+        for (Map<String, Object> group : result) {
+            System.out.println(group);
+        }
+    }
+}
+*/
+
+</script>
+</body>
+</html>
