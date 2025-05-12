@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chart</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/styles/jqx.base.css" />
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/jqxcore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/jqxdata.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/jqxchart.js"></script>
+  <style>
+    /* .cont .tblChart {width:100%;} */
+    /* .cont .chartContainer {width:100%;} */
+  </style>
+
+</head>
+<body>
+  <h1>jqxChart</h1>
+  <br>
+  <br>
+  <br>
+
+  <div class="cont" style="width:100%;">
+  </div>
+
+  <button id="refresh">클릭</button>
+
+
+  <script>
+
+    let dataArr = [];
+    dataArr.push({
+      dataField: 'Keith', displayText: 'Keith',
+    });
+    dataArr.push({
+      dataField: 'Erica', displayText: 'Erica',
+    });
+    dataArr.push({
+      dataField: 'George', displayText: 'George',
+    });
+    
+    function makeChart(){
+      // prepare chart data
+      var sampleData = [
+              { Day: '10/10', Keith: 30, Erica: 15, George: 25 , test: true },
+              { Day: '10/11', Keith: 25, Erica: 25, George: 30 , test: false },
+              { Day: '10/12', Keith: 30, Erica: 20, George: 25, test: true },
+              { Day: '10/13', Keith: 35, Erica: 25, George: 45, test: false },
+              { Day: '10/14', Keith: 20, Erica: 20, George: 25, test: false },
+              { Day: '10/15', Keith: 30, Erica: 20, George: 30, test: true },
+      ];
+
+      if($('#lineContainer').length > 0) {
+        $('#lineContainer').jqxChart('destroy'); // 캐시된 jqxChart 인스턴스 확실히 제거
+        $('.cont').empty(); // 태그 삭제
+      } 
+      let tag = '<div id="lineContainer" style="width: 100%; height: 400px;"></div>';
+      $('.cont').append(tag);
+
+  
+      // prepare jqxChart settings
+      var settings = {
+          title: "Fitness & exercise weekly scorecard",
+          description: "",
+          padding: { left: 5, top: 5, right: 5, bottom: 5 },
+          titlePadding: { left: 90, top: 0, right: 0, bottom: 10 },
+          source: sampleData,
+          categoryAxis:
+              {
+                  dataField: 'Day',
+                  showGridLines: false
+              },
+          colorScheme: 'scheme01',
+          seriesGroups:
+              [
+                  {
+                      type: 'line',
+                      columnsGapPercent: 30,
+                      seriesGapPercent: 0,
+                      valueAxis:
+                      {
+                          minValue: 0,
+                          maxValue: 100,
+                          unitInterval: 10,
+                          description: 'Time in minutes'
+                      },
+                      series: dataArr
+                  }
+              ]
+      };
+  
+      // select the chartContainer DIV element and render the chart.
+      
+      $('#lineContainer').jqxChart(settings);
+
+      //$("#lineContainer").find(".tblChart").css("width", "100%"); // 내부 테이블의 너비 조정
+   
+    }
+    $(document).ready(function () {
+      makeChart();
+
+      $('#refresh').on('click', ()=>{
+        makeChart();
+      });
+
+      $(window).on('resize', function() {
+        $("#lineContainer").jqxChart('refresh');
+      });
+    });
+
+
+
+    // convert data
+    const data = [
+      {date: '2020-12-01 00:00:00', name: "one", scrore: 20, hasPot: true },
+      {date: '2020-12-01 00:00:00', name: "two", scrore: 10, hasPot: true },
+      {date: '2020-12-01 00:00:00', name: "three", scrore: 70, hasPot: false },
+      {date: '2020-12-01 06:00:00', name: "one", scrore: 20, hasPot: true },
+      {date: '2020-12-01 06:00:00', name: "two", scrore: 20, hasPot: true },
+      {date: '2020-12-01 12:00:00', name: "one", scrore: 20, hasPot: false },
+      {date: '2020-12-01 18:00:00', name: "one", scrore: 20, hasPot: false },
+      {date: '2020-12-01 18:00:00', name: "one", scrore: 20, hasPot: true },
+    ];
+
+    const grouped = data.reduce((acc, item) => {
+      const { date, name, scrore, hasPot } = item;
+
+      if (!acc[date]) {
+        acc[date] = { date, hasPot: false, values: {} };
+      }
+
+      acc[date].values[name] = scrore;
+
+      if (hasPot) {
+        acc[date].hasPot = true;
+      }
+
+      return acc;
+    }, {});
+
+    const result = Object.values(grouped).map(entry => {
+      const { date, hasPot, values } = entry;
+
+      const formattedDate = hasPot ? `#${date}` : date;
+
+      return { date: formattedDate, ...values, hasPot };
+    });
+
+    console.log(result);
+
+
+    // Arr.reduce()
+    // 배열을 순회하며 return 한 값이 다음 회차의 accumulator에 들어감. 
+    const cart = [
+      {
+        name: '사과',
+        price: 500
+      },
+      {
+        name: '바나나',
+        price: 700
+      },
+      {
+        name: '레몬',
+        price: 300
+      }
+    ];
+
+    // Q1 카트 안의 합계 금액 구하기
+    let answer1 = cart.reduce((acc, currentVal)=>{
+      //const {name, price} = currentVal;
+      //acc += price ;
+      //return acc;
+      return acc + currentVal.price;
+    }, 0);
+
+    // Q2 가장 작은 수 구하기
+    const nums = [1, 5, 10, 2];
+    const smallest = nums.reduce((acc, item)=>{
+      if(acc > item) {
+        return item;
+      }
+      return acc;
+    });
+
+    console.log(answer1);
+    console.log(smallest);
+  </script>
+</body>
+</html>

@@ -80,54 +80,18 @@ function makeLineData(items) {
   return Object.values(grouped);
 }
 
-/*
-//in JAVA
-import java.util.*;
+// date 별로 묶고, hasLabel 여부에 따라 date 표기
+const data = [
+  { date: "2025-05-10", name: "Alice", score: "95", hasTime: true },
+  { date: "2025-05-10", name: "Bob", score: "88", hasTime: false },
+  { date: "2025-05-10", name: "Eve", score: "70", hasTime: false },
+  { date: "2025-05-11", name: "Charlie", score: "90", hasTime: true },
+  { date: "2025-05-11", name: "Dave", score: "85", hasTime: false },
+  { date: "2025-05-12", name: "Frank", score: "75", hasTime: false },
+];
 
-public class GroupByDateTransformer {
 
-    public static List<Map<String, Object>> transform(List<Map<String, Object>> items) {
-        Map<String, Map<String, Object>> grouped = new LinkedHashMap<>();
 
-        for (Map<String, Object> item : items) {
-            String date = (String) item.get("Date");
-            String scheduler = (String) item.get("SCHEDULAR");
-            String type = (String) item.get("Type");
-            Object ratio = item.get("Ratio");
-
-            String key = scheduler + type;
-
-            // Get or create group by date
-            grouped.putIfAbsent(date, new LinkedHashMap<>());
-            Map<String, Object> group = grouped.get(date);
-
-            group.put("Date", date);
-            group.put(key, ratio);
-        }
-
-        return new ArrayList<>(grouped.values());
-    }
-
-    public static void main(String[] args) {
-        List<Map<String, Object>> items = new ArrayList<>();
-
-        // Sample data
-        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Red", "Type", "Circle", "Ratio", 54));
-        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Blue", "Type", "Square", "Ratio", 30));
-        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Green", "Type", "Triangle", "Ratio", 10));
-        items.add(Map.of("Date", "2025-04-29 10:00:00", "SCHEDULAR", "Yellow", "Type", "Hexagon", "Ratio", 6));
-        
-        // Add more groups if needed...
-
-        List<Map<String, Object>> result = transform(items);
-
-        // Print result
-        for (Map<String, Object> group : result) {
-            System.out.println(group);
-        }
-    }
-}
-*/
 
 </script>
 </body>
