@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>jqxTabs + API 데이터 시각화</title>
+    <link rel="stylesheet" href="https://jqwidgets.com/public/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxcore.js"></script>
+     <script src="https://jqwidgets.com/public/jqwidgets/jqxdata.js"></script> 
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxtabs.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxchart.core.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxdraw.js"></script>
+</head>
+<body>
+    <div id="myTabs" style="width: 1000px; height: 700px;">
+        <ul id="tabTitles"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let apis = [
+                { 
+                    name: "환율 데이터", 
+                    url: "https://api.exchangerate.host/latest?base=USD", 
+                    type: "line" 
+                },
+                { 
+                    name: "코로나 통계", 
+                    url: "https://disease.sh/v3/covid-19/all", 
+                    type: "donut" 
+                },
+                { 
+                    name: "서울 날씨", 
+                    url: "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&hourly=temperature_2m", 
+                    type: "line" 
+                }
+            ];
+
+            // 탭 구조 동적 생성
+            apis.forEach((api, index) => {
+                $("#tabTitles").append(`<li>${api.name}</li>`);
+                $("#myTabs").append(`
+                    <div style="padding: 10px;">
+                        <div id="chart${index}" style="width: 100%; height: 300px;"></div>
+                        <table id="table${index}" border="1" style="margin-top: 20px; border-collapse: collapse; width: 100%;"></table>
+                    </div>
+                `);
+            });
+
+            // jqxTabs 초기화
+            $("#myTabs").jqxTabs({ width: '1000px', height: '700px' });
+
+            // API 데이터 불러와서 차트/테이블 생성
+            apis.forEach((api, index) => {
+                $.ajax({
+                    url: api.url,
+                    method: "GET",
+                    success: function (data) {
+                        let chartData = [];
+                        let tableHTML = "<tr><th>Key</th><th>Value</th></tr>";
+
+                        if (api.type === "line" && api.name.includes("환율")) {
+                            let count = 0;
+                            for (let key in data.rates) {
+                                if (count++ > 10) break; // 10개만 표시
+                                chartData.push({ currency: key, rate: data.rates[key] });
+                                tableHTML += `<tr><td>${key}</td><td>${data.rates[key]}</td></tr>`;
+                            }
+                            drawLineChart(`#chart${index}`, chartData, "currency", "rate", "환율");
+
+                        } else if (api.type === "donut") {
+                            chartData = [
+                                { label: "확진자", value: data.cases },
+                                { label: "사망자", value: data.deaths },
+                                { label: "회복자", value: data.recovered }
+                            ];
+                            chartData.forEach(item => {
+                                tableHTML += `<tr><td>${item.label}</td><td>${item.value}</td></tr>`;
+                            });
+                            drawDonutChart(`#chart${index}`, chartData);
+
+                        } else if (api.type === "line" && api.name.includes("날씨")) {
+                            let hours = data.hourly.time.slice(0, 12);
+                            let temps = data.hourly.temperature_2m.slice(0, 12);
+                            for (let i = 0; i < hours.length; i++) {
+                                chartData.push({ time: hours[i], temp: temps[i] });
+                                tableHTML += `<tr><td>${hours[i]}</td><td>${temps[i]}</td></tr>`;
+                            }
+                            drawLineChart(`#chart${index}`, chartData, "time", "temp", "기온(°C)");
+                        }
+
+                        $(`#table${index}`).html(tableHTML);
+                    }
+                });
+            });
+
+            // 라인차트 함수
+            function drawLineChart(selector, data, xField, yField, yTitle) {
+                let settings = {
+                    title: "라인 차트",
+                    description: "",
+                    enableAnimations: true,
+                    source: data,
+                    xAxis: {
+                        dataField: xField,
+                        unitInterval: 1,
+                        gridLines: { visible: true }
+                    },
+                    valueAxis: {
+                        title: { text: yTitle }
+                    },
+                    seriesGroups: [
+                        {
+                            type: 'line',
+                            series: [{ dataField: yField, displayText: yTitle }]
+                        }
+                    ]
+                };
+                $(selector).jqxChart(settings);
+            }
+
+            // 도넛차트 함수
+            function drawDonutChart(selector, data) {
+                let settings = {
+                    title: "도넛 차트",
+                    description: "",
+                    enableAnimations: true,
+                    showLegend: true,
+                    source: data,
+                    seriesGroups: [{
+                        type: 'donut',
+                        series: [{
+                            dataField: 'value',
+                            displayText: 'label',
+                            labelRadius: 50,
+                            initialAngle: 15,
+                            radius: 100,
+                            innerRadius: 50
+                        }]
+                    }]
+                };
+                $(selector).jqxChart(settings);
+            }
+        });
+    </script>
+</body>
+</html>

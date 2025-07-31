@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>jqxTabs COVID-19 국가별 데이터</title>
+    <link rel="stylesheet" href="https://jqwidgets.com/public/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxcore.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxdraw.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxchart.core.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxdata.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxtabs.js"></script>
+    <style>
+        .tab-content { padding: 10px; }
+        .chart-container { width: 400px; height: 300px; float: left; }
+        table { border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="myTabs" style="width: 1000px; height: 800px;">
+    <ul id="tabTitles"></ul>
+</div>
+
+<script>
+$(document).ready(function () {
+    // 국가별 API 정보
+    let tabInfo = [
+        { title: "한국", code: "KR" },
+        { title: "일본", code: "JP" },
+        { title: "미국", code: "US" },
+        { title: "영국", code: "GB" }
+    ];
+
+    let $tabs = $("#myTabs");
+    let $ul = $("#tabTitles");
+
+    // 탭과 콘텐츠 영역 생성
+    tabInfo.forEach((t, i) => {
+        $ul.append(`<li>${t.title}</li>`);
+        $tabs.append(`
+            <div class="tab-content" id="tab-${i}">
+                <div id="lineChart-${i}" class="chart-container"></div>
+                <div id="donutChart-${i}" class="chart-container"></div>
+                <table id="table-${i}">
+                    <thead>
+                        <tr><th>지표</th><th>값</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        `);
+    });
+
+    // jqxTabs 초기화
+    $tabs.jqxTabs({ width: '1000px', height: '800px' });
+
+    // 데이터 로드 함수
+    function loadData(tabIndex) {
+        let countryCode = tabInfo[tabIndex].code;
+        let apiUrl = `https://disease.sh/v3/covid-19/countries/${countryCode}`;
+
+        $.getJSON(apiUrl, function(data) {
+            // 테이블 데이터 채우기
+            let rows = `
+                <tr><td>확진자</td><td>${data.cases.toLocaleString()}</td></tr>
+                <tr><td>사망자</td><td>${data.deaths.toLocaleString()}</td></tr>
+                <tr><td>회복자</td><td>${data.recovered.toLocaleString()}</td></tr>
+                <tr><td>오늘 확진</td><td>${data.todayCases.toLocaleString()}</td></tr>
+                <tr><td>오늘 사망</td><td>${data.todayDeaths.toLocaleString()}</td></tr>
+            `;
+            $(`#table-${tabIndex} tbody`).html(rows);
+
+            // 라인차트 데이터 예시 (임의로 생성)
+            let lineData = [
+                { day: "Day 1", cases: data.cases / 5 },
+                { day: "Day 2", cases: data.cases / 4 },
+                { day: "Day 3", cases: data.cases / 3 },
+                { day: "Day 4", cases: data.cases / 2 },
+                { day: "Day 5", cases: data.cases }
+            ];
+            let lineSettings = {
+                title: `${tabInfo[tabIndex].title} COVID-19 추세`,
+                source: lineData,
+                xAxis: { dataField: 'day' },
+                seriesGroups: [{
+                    type: 'line',
+                    series: [{ dataField: 'cases', displayText: '확진자' }]
+                }]
+            };
+            $(`#lineChart-${tabIndex}`).jqxChart(lineSettings);
+
+            // 도넛차트
+            let donutData = [
+                { label: "사망", value: data.deaths },
+                { label: "회복", value: data.recovered },
+                { label: "확진(활성)", value: data.active }
+            ];
+            let donutSettings = {
+                title: `${tabInfo[tabIndex].title} 현황`,
+                source: donutData,
+                seriesGroups: [{
+                    type: 'donut',
+                    series: [{
+                        dataField: 'value',
+                        displayText: 'label',
+                        showLabels: true,
+                        labelRadius: 100,
+                        initialAngle: 15,
+                        radius: 120
+                    }]
+                }]
+            };
+            $(`#donutChart-${tabIndex}`).jqxChart(donutSettings);
+        });
+    }
+
+    // 첫 탭 로드
+    loadData(0);
+
+    // 탭 변경 시 해당 데이터 로드
+    $tabs.on('selected', function (event) {
+        loadData(event.args.item);
+    });
+});
+</script>
+
+</body>
+</html>
