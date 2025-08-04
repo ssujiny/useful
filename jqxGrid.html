@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>data convert</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- jQuery Templates (템플릿 기능) -->
+    <script src="https://cdn.jsdelivr.net/gh/BorisMoore/jquery-tmpl@master/jquery.tmpl.min.js"></script>
+
+
+    <!-- jqx 관련 기능을 사용한다면 (선택) -->
+    <!-- jqWidgets 라이브러리 (jqxGrid, jqxDataTable 등) -->
+    <link rel="stylesheet" href="https://jqwidgets.com/public/jqwidgets/styles/jqx.base.css" />
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxcore.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxdata.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxbuttons.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxscrollbar.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxdatatable.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxgrid.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxgrid.selection.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxgrid.columnsresize.js"></script>
+    <script src="https://jqwidgets.com/public/jqwidgets/jqxgrid.grouping.js"></script>
+
+    <style>
+  body {
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    padding: 30px;
+    background-color: #f9fafb;
+  }
+
+  .category-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 6px rgba(0,0,0,0.05);
+  }
+
+  .category-table th,
+  .category-table td {
+    border: 1px solid #ddd;
+    padding: 10px 14px;
+    text-align: center;
+  }
+
+  .category-table th {
+    background-color: #f0f2f5;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .category-table tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+
+  .category-table tr:hover {
+    background-color: #e6f7ff;
+  }
+
+  .group-title {
+    margin-top: 40px;
+    font-size: 18px;
+    color: #555;
+  }
+
+  tr.low-value td {
+    color: #e74c3c;
+    font-weight: bold;
+  }
+</style>
+
+</head>
+<body>
+
+<!-- HTML 상단에 템플릿 정의 -->
+<div class="category-group">
+    <h3 class="group-title">📚make table</h3>
+    <table class="category-table">
+        <thead>
+            <tr>
+                <th>구분</th>
+                <th>book</th>
+                <th>movie</th>
+            </tr>
+        </thead>
+        <tbody id="tBody">
+           
+        </tbody>
+    </table>
+</div>
+<script id="categoryTemplate" type="text/x-jquery-tmpl">
+     <tr>
+        <td>${name}</td>
+        <td>${bookVal}</td>
+        <td>${movieVal} (${change})</td>
+    </tr>
+</script>
+
+<!-- 렌더링되는 위치 -->
+<div id="category-grid-container"></div>
+
+
+<script>
+
+const dataArr = [
+  { "title": "model1", "category": "book", "num": "83.42", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "12.67", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "45.89", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "87.65", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "66.23", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "91.34", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "38.71", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "79.56", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "52.48", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "63.90", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "74.15", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "29.84", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "19.37", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "88.02", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "61.09", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "47.26", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "33.58", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "76.41", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "58.73", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "92.18", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "84.66", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "15.29", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "49.87", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "67.44", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "26.95", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "93.81", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "71.38", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "34.62", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "59.20", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "80.77", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "42.31", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "66.88", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "90.54", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "21.73", "dateLong": 1753660800000 },
+  { "title": "model3", "category": "book", "num": "36.49", "dateLong": 1754265600000 },
+  { "title": "model3", "category": "movie", "num": "78.96", "dateLong": 1753660800000 },
+  { "title": "model1", "category": "book", "num": "63.17", "dateLong": 1754265600000 },
+  { "title": "model1", "category": "movie", "num": "50.25", "dateLong": 1753660800000 },
+  { "title": "model2", "category": "book", "num": "29.61", "dateLong": 1754265600000 },
+  { "title": "model2", "category": "movie", "num": "85.03", "dateLong": 1753660800000 }
+]
+
+function formatValue(num) {
+    return Number(num) < 40 ? '< 40' : Number(num).toFixed(1);
+}
+
+function groupByCategory(dataArr) {
+    const groups = {};
+    let bookSum = 0;
+    let movieSum = 0;
+
+    dataArr.forEach(item => {
+        const {category, title, num } = item;
+        const rawNum = parseFloat(num);
+        const isLow = rawNum < 30;
+        const formmatedNum = Number(num) < 40 ? "< 40" : Number(num).toFixed(1);
+
+        if(!groups[title]) {
+            groups[title] = {
+                name: title,
+                bookRaw: 0,
+                movieRaw: 0
+            };
+        }
+
+        if(category === 'book') groups[title].bookRaw = rawNum;
+        if(category === 'movie')  groups[title].movieRaw = rawNum;
+
+        if(isLow) {
+            if(category === 'book') bookSum += rawNum;
+            if(category === 'movie') movieSum += rawNum;
+            groups[title].isEtc = true;
+        }
+    });
+
+    const result = [];
+
+    Object.values(groups).forEach(obj => {
+        if(obj.isEtc) return;
+        
+        const bookVal = obj.bookRaw < 40 ? '< 40' : obj.bookRaw.toFixed(1);
+        const movieVal = obj.movieRaw < 40 ? '< 40' : obj.movieRaw.toFixed(1);
+        const change = Math.abs(obj.bookRaw - obj.movieRaw).toFixed(1);
+
+        result.push({
+            name: obj.name,
+            bookVal,
+            movieVal,
+            change
+        });
+    });
+
+    result.push({
+        name: '기타',
+        bookVal: Number(bookSum) < 40 ? '< 40' : Number(bookSum).toFixed(1),
+        movieVal: Number(movieSum) < 40 ? '< 40' : Number(movieSum).toFixed(1),
+        change: (Math.round((Number(movieSum) -  Number(bookSum)) * 100) / 100).toFixed(1)
+    });
+    return result;
+}
+
+function renderCategoryTmpl(dataArr) {
+    const grouped = groupByCategory(dataArr);
+    $('#tBody').empty();
+    $('#categoryTemplate').tmpl(grouped).appendTo("#tBody");
+}
+
+$(document).ready(function() {
+    renderCategoryTmpl(dataArr);
+});
+
+/*
+Promise.all([
+  $.ajax({ url: '/api/data1', dataType: 'json' }), // 2,3,4행
+  $.ajax({ url: '/api/data2', dataType: 'json' })  // 1행, 마지막 행
+]).then(function([data1, data2]) {
+  
+  // 테이블 데이터 구조 생성
+  let tableData = [];
+
+  // 두 번째 AJAX → 1행
+  tableData[0] = data2.firstRow;
+
+  // 첫 번째 AJAX → 2,3,4행
+  tableData[1] = data1.row2;
+  tableData[2] = data1.row3;
+  tableData[3] = data1.row4;
+
+  // 두 번째 AJAX → 마지막 행
+  tableData.push(data2.lastRow);
+
+  // 이제 tableData를 한 번에 렌더링
+  renderTable(tableData);
+  
+}).catch(function(error) {
+  console.error("데이터 불러오기 실패", error);
+});
+
+function renderTable(data) {
+  let tbody = $("#myTable tbody");
+  tbody.empty();
+  data.forEach(row => {
+    tbody.append(`<tr>
+      <td>${row.col1}</td>
+      <td>${row.col2}</td>
+      <td>${row.col3}</td>
+    </tr>`);
+  });
+}
+
+*/
+
+</script>
+
+</body>
+</html>
